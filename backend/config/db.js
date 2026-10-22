@@ -1,11 +1,16 @@
 import mongoose from "mongoose";
 
 export const connectDB = async () => {
-
-    await mongoose.connect('mongodb+srv://itsmebittu:Adventure123@cluster0.hjcno.mongodb.net/food-del').then(() => console.log("DB Connected"));
-
-}
-
-
-// add your mongoDB connection string above.
-// Do not use '@' symbol in your databse user's password else it will show an error.
+    const mongoUri = process.env.MONGODB_URI;
+    if (!mongoUri) {
+        console.error("MONGODB_URI is not defined in backend/.env");
+        return;
+    }
+    try {
+        await mongoose.connect(mongoUri, { serverSelectionTimeoutMS: 5000 });
+        console.log("DB Connected successfully");
+    } catch (error) {
+        console.error("MongoDB connection failed:", error.message);
+        console.log("Please check or configure MONGODB_URI in backend/.env");
+    }
+}

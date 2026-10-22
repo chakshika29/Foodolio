@@ -10,8 +10,17 @@ const MyOrders = () => {
   const {url,token,currency} = useContext(StoreContext);
 
   const fetchOrders = async () => {
-    const response = await axios.post(url+"/api/order/userorders",{},{headers:{token}});
-    setData(response.data.data)
+    try {
+      const response = await axios.post(url+"/api/order/userorders",{},{headers:{token}});
+      if (response.data && response.data.success && Array.isArray(response.data.data)) {
+        setData(response.data.data);
+      } else {
+        setData([]);
+      }
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+      setData([]);
+    }
   }
 
   useEffect(()=>{
@@ -24,12 +33,12 @@ const MyOrders = () => {
     <div className='my-orders'>
       <h2>My Orders</h2>
       <div className="container">
-        {data.map((order,index)=>{
+        {data.length === 0 ? <p className="no-orders">No orders found.</p> : data.map((order,index)=>{
           return (
             <div key={index} className='my-orders-order'>
                 <img src={assets.parcel_icon} alt="" />
-                <p>{order.items.map((item,index)=>{
-                  if (index === order.items.length-1) {
+                <p>{(order.items || []).map((item,index)=>{
+                  if (index === (order.items || []).length-1) {
                     return item.name+" x "+item.quantity
                   }
                   else{
@@ -38,7 +47,7 @@ const MyOrders = () => {
                   
                 })}</p>
                 <p>{currency}{order.amount}.00</p>
-                <p>Items: {order.items.length}</p>
+                <p>Items: {(order.items || []).length}</p>
                 <p><span>&#x25cf;</span> <b>{order.status}</b></p>
                 <button onClick={fetchOrders}>Track Order</button>
             </div>

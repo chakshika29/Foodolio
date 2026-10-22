@@ -1,17 +1,21 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import validator from "validator";
+import mongoose from "mongoose";
 import userModel from "../models/userModel.js";
 
 //create token
 const createToken = (id) => {
-    return jwt.sign({id}, process.env.JWT_SECRET);
+    return jwt.sign({id}, process.env.JWT_SECRET || "foodolio_secret_key");
 }
 
 //login user
 const loginUser = async (req,res) => {
     const {email, password} = req.body;
     try{
+        if (mongoose.connection.readyState !== 1) {
+            return res.json({success:false, message: "Database not connected. Please check MONGODB_URI in backend/.env"});
+        }
         const user = await userModel.findOne({email})
 
         if(!user){
@@ -28,7 +32,7 @@ const loginUser = async (req,res) => {
         res.json({success:true,token})
     } catch (error) {
         console.log(error);
-        res.json({success:false,message:"Error"})
+        res.json({success:false,message: error.message || "Error"})
     }
 }
 
@@ -36,6 +40,9 @@ const loginUser = async (req,res) => {
 const registerUser = async (req,res) => {
     const {name, email, password} = req.body;
     try{
+        if (mongoose.connection.readyState !== 1) {
+            return res.json({success:false, message: "Database not connected. Please check MONGODB_URI in backend/.env"});
+        }
         //check if user already exists
         const exists = await userModel.findOne({email})
         if(exists){
@@ -61,7 +68,7 @@ const registerUser = async (req,res) => {
 
     } catch(error){
         console.log(error);
-        res.json({success:false,message:"Error"})
+        res.json({success:false,message: error.message || "Error"})
     }
 }
 

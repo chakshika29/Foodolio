@@ -2,6 +2,7 @@ import React, { useContext } from 'react'
 import './Cart.css'
 import { StoreContext } from '../../Context/StoreContext'
 import { useNavigate } from 'react-router-dom';
+import { assets } from '../../assets/assets';
 
 const Cart = () => {
 
@@ -16,11 +17,15 @@ const Cart = () => {
         </div>
         <br />
         <hr />
-        {food_list.map((item, index) => {
-          if (cartItems[item._id]>0) {
+        {(food_list || []).map((item, index) => {
+          if (cartItems && cartItems[item._id] > 0) {
             return (<div key={index}>
               <div className="cart-items-title cart-items-item">
-                <img src={url+"/images/"+item.image} alt="" />
+                <img 
+                  src={item.image?.startsWith('http') || item.image?.startsWith('data:') ? item.image : `${url}/images/${item.image}`} 
+                  onError={(e) => { e.target.src = assets?.food_1 || ''; }}
+                  alt={item.name} 
+                />
                 <p>{item.name}</p>
                 <p>{currency}{item.price}</p>
                 <div>{cartItems[item._id]}</div>
@@ -30,6 +35,7 @@ const Cart = () => {
               <hr />
             </div>)
           }
+          return null;
         })}
       </div>
       <div className="cart-bottom">

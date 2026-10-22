@@ -1,17 +1,31 @@
 import orderModel from "../models/orderModel.js";
 import userModel from "../models/userModel.js"
 import Stripe from "stripe";
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+import mongoose from "mongoose";
+
+// lazy stripe initialization to avoid crashing if secret key is missing
+const getStripe = () => {
+    const key = process.env.STRIPE_SECRET_KEY;
+    if (!key || key.trim() === "") return null;
+    return new Stripe(key);
+}
 
 //config variables
 const currency = "inr";
 const deliveryCharge = 50;
-const frontend_URL = 'http://localhost:5173';
+const frontend_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
 // Placing User Order for Frontend using stripe
 const placeOrder = async (req, res) => {
-
     try {
+        if (mongoose.connection.readyState !== 1) {
+            return res.json({ success: false, message: "Database not connected. Please check MONGODB_URI in backend/.env" });
+        }
+        const stripe = getStripe();
+        if (!stripe) {
+            return res.json({ success: false, message: "Stripe payment is not configured. Please select COD (Cash on Delivery) or set STRIPE_SECRET_KEY in backend/.env" });
+        }
+
         const newOrder = new orderModel({
             userId: req.body.userId,
             items: req.body.items,
@@ -54,14 +68,16 @@ const placeOrder = async (req, res) => {
 
     } catch (error) {
         console.log(error);
-        res.json({ success: false, message: "Error" })
+        res.json({ success: false, message: error.message || "Error" })
     }
 }
 
 // Placing User Order for Frontend using stripe
 const placeOrderCod = async (req, res) => {
-
     try {
+        if (mongoose.connection.readyState !== 1) {
+            return res.json({ success: false, message: "Database not connected. Please check MONGODB_URI in backend/.env" });
+        }
         const newOrder = new orderModel({
             userId: req.body.userId,
             items: req.body.items,
@@ -76,46 +92,56 @@ const placeOrderCod = async (req, res) => {
 
     } catch (error) {
         console.log(error);
-        res.json({ success: false, message: "Error" })
+        res.json({ success: false, message: error.message || "Error" })
     }
 }
 
 // Listing Order for Admin panel
 const listOrders = async (req, res) => {
     try {
+        if (mongoose.connection.readyState !== 1) {
+            return res.json({ success: false, message: "Database not connected. Please check MONGODB_URI in backend/.env", data: [] });
+        }
         const orders = await orderModel.find({});
         res.json({ success: true, data: orders })
     } catch (error) {
         console.log(error);
-        res.json({ success: false, message: "Error" })
+        res.json({ success: false, message: error.message || "Error", data: [] })
     }
 }
 
 // User Orders for Frontend
 const userOrders = async (req, res) => {
     try {
+        if (mongoose.connection.readyState !== 1) {
+            return res.json({ success: false, message: "Database not connected. Please check MONGODB_URI in backend/.env", data: [] });
+        }
         const orders = await orderModel.find({ userId: req.body.userId });
         res.json({ success: true, data: orders })
     } catch (error) {
         console.log(error);
-        res.json({ success: false, message: "Error" })
+        res.json({ success: false, message: error.message || "Error", data: [] })
     }
 }
 
 const updateStatus = async (req, res) => {
-    console.log(req.body);
     try {
+        if (mongoose.connection.readyState !== 1) {
+            return res.json({ success: false, message: "Database not connected. Please check MONGODB_URI in backend/.env" });
+        }
         await orderModel.findByIdAndUpdate(req.body.orderId, { status: req.body.status });
         res.json({ success: true, message: "Status Updated" })
     } catch (error) {
-        res.json({ success: false, message: "Error" })
+        res.json({ success: false, message: error.message || "Error" })
     }
-
 }
 
 const verifyOrder = async (req, res) => {
     const { orderId, success } = req.body;
     try {
+        if (mongoose.connection.readyState !== 1) {
+            return res.json({ success: false, message: "Database not connected. Please check MONGODB_URI in backend/.env" });
+        }
         if (success === "true") {
             await orderModel.findByIdAndUpdate(orderId, { payment: true });
             res.json({ success: true, message: "Paid" })
@@ -125,9 +151,8 @@ const verifyOrder = async (req, res) => {
             res.json({ success: false, message: "Not Paid" })
         }
     } catch (error) {
-        res.json({ success: false, message: "Not  Verified" })
+        res.json({ success: false, message: error.message || "Not Verified" })
     }
-
 }
 
 export { placeOrder, listOrders, userOrders, updateStatus, verifyOrder, placeOrderCod }

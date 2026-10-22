@@ -34,40 +34,42 @@ const PlaceOrder = () => {
     const placeOrder = async (e) => {
         e.preventDefault()
         let orderItems = [];
-        food_list.map(((item) => {
+        food_list.forEach((item) => {
             if (cartItems[item._id] > 0) {
-                let itemInfo = item;
-                itemInfo["quantity"] = cartItems[item._id];
+                let itemInfo = { ...item, quantity: cartItems[item._id] };
                 orderItems.push(itemInfo)
             }
-        }))
+        })
         let orderData = {
             address: data,
             items: orderItems,
             amount: getTotalCartAmount() + deliveryCharge,
         }
-        if (payment === "stripe") {
-            let response = await axios.post(url + "/api/order/place", orderData, { headers: { token } });
-            if (response.data.success) {
-                const { session_url } = response.data;
-                window.location.replace(session_url);
+        try {
+            if (payment === "stripe") {
+                let response = await axios.post(url + "/api/order/place", orderData, { headers: { token } });
+                if (response.data && response.data.success) {
+                    const { session_url } = response.data;
+                    window.location.replace(session_url);
+                }
+                else {
+                    toast.error(response.data?.message || "Payment initiation failed")
+                }
             }
-            else {
-                toast.error("Something Went Wrong")
+            else{
+                let response = await axios.post(url + "/api/order/placecod", orderData, { headers: { token } });
+                if (response.data && response.data.success) {
+                    navigate("/myorders")
+                    toast.success(response.data.message || "Order Placed Successfully")
+                    setCartItems({});
+                }
+                else {
+                    toast.error(response.data?.message || "Order placement failed")
+                }
             }
+        } catch (error) {
+            toast.error(error.response?.data?.message || error.message || "Network error placing order");
         }
-        else{
-            let response = await axios.post(url + "/api/order/placecod", orderData, { headers: { token } });
-            if (response.data.success) {
-                navigate("/myorders")
-                toast.success(response.data.message)
-                setCartItems({});
-            }
-            else {
-                toast.error("Something Went Wrong")
-            }
-        }
-
     }
 
     useEffect(() => {

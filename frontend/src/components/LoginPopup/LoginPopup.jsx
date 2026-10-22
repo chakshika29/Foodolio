@@ -32,15 +32,19 @@ const LoginPopup = ({ setShowLogin }) => {
         else {
             new_url += "/api/user/register"
         }
-        const response = await axios.post(new_url, data);
-        if (response.data.success) {
-            setToken(response.data.token)
-            localStorage.setItem("token", response.data.token)
-            loadCartData({token:response.data.token})
-            setShowLogin(false)
-        }
-        else {
-            toast.error(response.data.message)
+        try {
+            const response = await axios.post(new_url, data);
+            if (response.data && response.data.success) {
+                setToken(response.data.token)
+                localStorage.setItem("token", response.data.token)
+                loadCartData({token:response.data.token})
+                setShowLogin(false)
+            }
+            else {
+                toast.error(response.data?.message || "Action failed")
+            }
+        } catch (error) {
+            toast.error(error.response?.data?.message || error.message || "Connection error");
         }
     }
 
