@@ -13,7 +13,7 @@ const FoodItem = ({ image, name, price, desc , id }) => {
             <div className='food-item-img-container'>
                 <img 
                     className='food-item-image' 
-                    src={image?.startsWith('http') || image?.startsWith('data:') ? image : `${url}/images/${image}`} 
+                    src={typeof image === 'string' && (image.startsWith('http') || image.startsWith('data:') || image.startsWith('/')) ? image : (typeof image === 'string' ? `${url}/images/${image}` : (image || assets.food_1))} 
                     onError={(e) => { e.target.src = assets.food_1; }} 
                     alt={name} 
                 />

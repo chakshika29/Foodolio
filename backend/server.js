@@ -22,28 +22,14 @@ const port = process.env.PORT || 4000;
 // middlewares
 app.use(express.json())
 
-// CORS configuration supporting frontend, admin, and environment URLs
-const allowedOrigins = [
-  'http://localhost:5173',
-  'http://localhost:5174',
-  'http://localhost:5175',
-  'http://localhost:3000',
-  process.env.FRONTEND_URL,
-  process.env.ADMIN_URL
-].filter(Boolean);
-
+// CORS configuration supporting frontend, admin, Vercel deployments, and custom URLs
 app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV !== 'production') {
-      return callback(null, true);
-    }
-    return callback(new Error('CORS not allowed from origin: ' + origin));
-  },
+  origin: true,
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: ["Content-Type", "token", "Authorization"]
 }))
+app.options("*", cors())
 
 // db connection
 connectDB()

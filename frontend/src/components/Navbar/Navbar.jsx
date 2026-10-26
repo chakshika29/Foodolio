@@ -16,14 +16,28 @@ const Navbar = ({ setShowLogin }) => {
     navigate('/')
   }
 
+  const scrollTo = (id, menuName) => {
+    setMenu(menuName);
+    if (window.location.pathname !== '/') {
+      navigate('/');
+      setTimeout(() => {
+        const el = document.getElementById(id);
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    } else {
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    }
+  }
+
   return (
     <div className='navbar'>
       <Link to='/'><img className='logo' src={assets.logo} alt="" /></Link>
       <ul className="navbar-menu">
         <Link to="/" onClick={() => setMenu("home")} className={`${menu === "home" ? "active" : ""}`}>home</Link>
-        <a href='#explore-menu' onClick={() => setMenu("menu")} className={`${menu === "menu" ? "active" : ""}`}>menu</a>
-        <a href='#app-download' onClick={() => setMenu("mob-app")} className={`${menu === "mob-app" ? "active" : ""}`}>mobile app</a>
-        <a href='#footer' onClick={() => setMenu("contact")} className={`${menu === "contact" ? "active" : ""}`}>contact us</a>
+        <a href='#explore-menu' onClick={(e) => { e.preventDefault(); scrollTo('explore-menu', 'menu'); }} className={`${menu === "menu" ? "active" : ""}`}>menu</a>
+        <a href='#app-download' onClick={(e) => { e.preventDefault(); scrollTo('app-download', 'mob-app'); }} className={`${menu === "mob-app" ? "active" : ""}`}>mobile app</a>
+        <a href='#footer' onClick={(e) => { e.preventDefault(); scrollTo('footer', 'contact'); }} className={`${menu === "contact" ? "active" : ""}`}>contact us</a>
       </ul>
       <div className="navbar-right">
         <img src={assets.search_icon} alt="" />
