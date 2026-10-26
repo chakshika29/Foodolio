@@ -84,6 +84,7 @@ const placeOrderCod = async (req, res) => {
             amount: req.body.amount,
             address: req.body.address,
             payment: true,
+            paymentMethod: "COD"
         })
         await newOrder.save();
         await userModel.findByIdAndUpdate(req.body.userId, { cartData: {} });
@@ -93,6 +94,43 @@ const placeOrderCod = async (req, res) => {
     } catch (error) {
         console.log(error);
         res.json({ success: false, message: error.message || "Error" })
+    }
+}
+
+// Placing User Order for Frontend using Online Payment (Card / UPI / NetBanking)
+const placeOrderOnline = async (req, res) => {
+    try {
+        if (mongoose.connection.readyState !== 1) {
+            return res.json({ success: false, message: "Database not connected. Please check MONGODB_URI in backend/.env" });
+        }
+        const { userId, items, amount, address, paymentMethod, transactionId } = req.body;
+
+        if (!items || items.length === 0) {
+            return res.json({ success: false, message: "No items in cart to place order" });
+        }
+
+        const newOrder = new orderModel({
+            userId,
+            items,
+            amount,
+            address,
+            payment: true,
+            paymentMethod: paymentMethod || "Online Payment",
+            transactionId: transactionId || `TXN_${Date.now()}`
+        });
+
+        await newOrder.save();
+        await userModel.findByIdAndUpdate(userId, { cartData: {} });
+
+        res.json({
+            success: true,
+            message: "Payment Successful & Order Placed!",
+            orderId: newOrder._id,
+            transactionId: newOrder.transactionId
+        });
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message || "Payment processing failed" });
     }
 }
 
@@ -155,4 +193,4 @@ const verifyOrder = async (req, res) => {
     }
 }
 
-export { placeOrder, listOrders, userOrders, updateStatus, verifyOrder, placeOrderCod }
+export { placeOrder, listOrders, userOrders, updateStatus, verifyOrder, placeOrderCod, placeOrderOnline }

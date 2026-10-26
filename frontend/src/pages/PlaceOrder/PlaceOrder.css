@@ -52,15 +52,41 @@
 .payment .payment-option{
     display: flex;
     align-items: center;
-    gap: 10px ;
-    border: 1px solid tomato;
-    padding: 15px;
-    border-radius: 4px;
-    min-width: 300px;
+    gap: 12px;
+    border: 1px solid #d1d5db;
+    padding: 12px 16px;
+    border-radius: 8px;
+    min-width: 320px;
+    width: 100%;
     cursor: pointer;
+    background: #ffffff;
+    transition: all 0.2s;
 }
 .payment .payment-option:hover{
-    background-color:  #ffe7de;
+    border-color: #FF4C24;
+    background-color: #fff8f7;
+}
+.payment .payment-option.active{
+    border-color: #FF4C24;
+    background-color: #fff4f2;
+    box-shadow: 0 2px 8px rgba(255, 76, 36, 0.12);
+}
+.payment .payment-option img{
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+.payment-option .option-title{
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1f2937;
+}
+.payment-option .option-desc{
+    display: block;
+    font-size: 11px;
+    color: #6b7280;
+    margin-top: 2px;
 }
 
 @media (max-width:700px) {

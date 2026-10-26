@@ -48,7 +48,7 @@ const MyOrders = () => {
                 })}</p>
                 <p>{currency}{order.amount}.00</p>
                 <p>Items: {(order.items || []).length}</p>
-                <p><span>&#x25cf;</span> <b>{order.status}</b></p>
+                <p><span>&#x25cf;</span> <b>{order.status}</b> {order.paymentMethod ? <span style={{display:'block',fontSize:'11px',color:'#10b981',fontWeight:'600',marginTop:'3px'}}>✓ {order.paymentMethod}</span> : null}</p>
                 <button onClick={fetchOrders}>Track Order</button>
             </div>
           )
